@@ -1,205 +1,170 @@
-[Google Shopping Scraper](https://apify.com/burbn/google-shopping-scraper?fpr=data)
+[Google Shopping Scraper](https://apify.com/khadinakbar/google-shopping-scraper?fpr=data)
 
-# Google Shopping Scraper 🛒
+# 🛍️ Google Shopping Scraper
 
-Search and scrape **Google Shopping products** by keyword and export clean, structured data (product details, prices, ratings, reviews, store info, offers, shipping details).
-
-This actor is built for:
-
-- Price monitoring & tracking 💰
-- Competitor analysis 🧠
-- Market research 📊
-- E-commerce intelligence 🛍️
+Extract product listings, prices, sellers, ratings, discounts, and shipping info from Google Shopping in real time. Supports 28 countries, price range filters, sort by price or reviews, and new/used/refurbished condition filters.
 
 ---
 
-## 📌 Table of Contents
+## When to use this actor
 
-- ✨ Features
-- 🎯 Use Cases
-- ⚡ Quick Start
-- 🧾 Input Parameters
-- 📤 Output
-- 🧩 Dataset Views (Table View)
-- ❓ FAQ
-- 🔎 Tags
+Use this actor when asked to:
 
----
-
-## ✨ Features
-
-| Feature | Description |
-| --- | --- |
-| 🔍 **Keyword Search** | Search products by name, brand, or keywords |
-| 🌍 **Multi-Country Support** | Get localized results from any country |
-| 🗣️ **Multi-Language** | Results in your preferred language |
-| 📊 **Flexible Sorting** | Sort by best match, price (low/high), or rating |
-| 💰 **Complete Pricing** | Current price, original price, discounts, price ranges |
-| ⭐ **Ratings & Reviews** | Product ratings and review counts |
-| 🏪 **Store Information** | Store name, rating, reviews, shipping, returns |
-| 📦 **Pagination Support** | Scrape multiple pages of results |
-| 🧼 **Clean Dataset** | Organized data ready for analysis |
+- Find prices for a product on Google Shopping
+- Compare prices across multiple sellers or merchants
+- Monitor or track product pricing over time
+- Research competitor pricing for a product category
+- Find the cheapest place to buy a specific product
+- Get product ratings and review counts from Google Shopping
+- Scrape Google Shopping results for a keyword or product name
+- Get localized prices in a specific country (UK, Germany, Japan, etc.)
+- Filter results by condition (new, used, refurbished) or price range
 
 ---
 
-## 🎯 Use Cases
-
-| Use Case | What You Can Do | Why It Helps |
-| --- | --- | --- |
-| 💰 **Price Monitoring** | Track product prices across stores | Find best deals & price drops |
-| 🧠 **Competitor Analysis** | Compare competitor product pricing | Optimize your pricing strategy |
-| 📊 **Market Research** | Analyze product trends & availability | Make data-driven decisions |
-| 🛍️ **E-commerce Intelligence** | Monitor product listings & offers | Stay ahead of competition |
-| 📈 **Price Comparison** | Compare prices from multiple sellers | Find the best value |
-| 🏷️ **Deal Hunting** | Find products on sale with discounts | Save money on purchases |
-
----
-
-## ⚡ Quick Start
-
-### 1️⃣ Basic Run
-
-Use this input to search for products:
+## Quick Start (Minimal Input)
 
 ```
 {
-  "searchQuery": "nike running shoes",
-  "country": "us",
-  "language": "en",
-  "sortBy": "BEST_MATCH",
-  "limit": 20
+  "searchQueries": ["wireless headphones"],
+  "maxResults": 20
 }
 ```
 
-### 2️⃣ Advanced Search
-
-Search with custom sorting and pagination:
-
-```
-{
-  "searchQuery": "iPhone 15 Pro",
-  "country": "us",
-  "language": "en",
-  "sortBy": "LOWEST_PRICE",
-  "limit": 50
-}
-```
-
-### 3️⃣ Tips for Better Results
-
-- Use specific product names for accurate results
-- Try different `sortBy` options to find deals
-- Increase `limit` for comprehensive data
-- Use appropriate `country` code for local pricing
+`searchQueries` is the only required field. All other fields have sensible defaults.
 
 ---
 
-## 🧾 Input Parameters
+## Input
 
-| Parameter | Type | Required | Default | Description |
-| --- | --- | --- | --- | --- |
-| `searchQuery` | String | ✅ | - | Product name, brand, or keywords to search |
-| `country` | String | ❌ | `us` | Country code (ISO 3166-1 alpha-2) |
-| `language` | String | ❌ | `en` | Language code (ISO 639-1) |
-| `sortBy` | Enum | ❌ | `BEST_MATCH` | Sort order: `BEST_MATCH`, `LOWEST_PRICE`, `HIGHEST_PRICE`, `TOP_RATED` |
-| `limit` | Number | ❌ | `20` | Products per page (1-100) |
-
-### Supported Countries
-
-| Code | Country | Code | Country |
+| Field | Type | Default | Description |
 | --- | --- | --- | --- |
-| `us` | United States | `gb` | United Kingdom |
-| `de` | Germany | `fr` | France |
-| `in` | India | `ca` | Canada |
-| `au` | Australia | `jp` | Japan |
+| `searchQueries` | string[] | **required** | Product keywords to search. Multiple queries run independently. |
+| `maxResults` | integer | `20` | Max products per query (1–200). Triggers auto-pagination for higher values. |
+| `countryCode` | string | `"us"` | Target country for localized prices. E.g. `"gb"` for UK, `"de"` for Germany. |
+| `languageCode` | string | `"en"` | Language for results. E.g. `"fr"` for French. |
+| `sortBy` | string | `"relevance"` | Sort order: `relevance`, `price_low`, `price_high`, `review_score`. |
+| `condition` | string | `"any"` | Product condition: `any`, `new`, `used`, `refurbished`. |
+| `minPrice` | integer | — | Minimum price filter in the local currency (e.g. `50` = $50 in US). |
+| `maxPrice` | integer | — | Maximum price filter in the local currency (e.g. `500` = $500 in US). |
+| `proxyConfiguration` | object | GOOGLE_SERP | Leave as default — GOOGLE_SERP proxy is required for reliable Google access. |
 
-*See [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) for all country codes.*
-
----
-
-## 📤 Output
-
-Each dataset item represents **one Google Shopping product**.
-
-### 🧾 Output Fields
-
-| Category | Fields |
-| --- | --- |
-| 🏷️ **Product Info** | `productId`, `productTitle`, `productDescription`, `productPageUrl` |
-| 💰 **Pricing** | `price`, `originalPrice`, `onSale`, `percentOff`, `typicalPriceRange` |
-| ⭐ **Ratings** | `productRating`, `productNumReviews`, `productNumOffers` |
-| 🏪 **Store Info** | `storeName`, `storeRating`, `storeReviewCount`, `storeFavicon` |
-| 🚚 **Shipping** | `shipping`, `returns`, `paymentMethods`, `productCondition` |
-| 🖼️ **Media** | `productPhotos`, `productVideos` |
-| 🔧 **Variants** | `currentVariantProperties`, `productVariants`, `productAttributes` |
-
-### Sample Output
+### Example: Price comparison with filters
 
 ```
 {
-  "productId": "12345678901234567890",
-  "productTitle": "Sony WH-1000XM5 Wireless Headphones",
-  "productDescription": "Industry-leading noise cancellation...",
-  "price": "$348.00",
-  "originalPrice": "$399.99",
-  "onSale": true,
-  "percentOff": "13% off",
-  "productRating": 4.7,
-  "productNumReviews": 2543,
-  "storeName": "Amazon",
-  "storeRating": "4.5/5",
-  "shipping": "Free delivery",
-  "returns": "Free 30-day returns"
+  "searchQueries": ["Sony WH-1000XM5", "Bose QuietComfort 45"],
+  "maxResults": 10,
+  "sortBy": "price_low",
+  "condition": "new",
+  "countryCode": "us"
+}
+```
+
+### Example: UK price monitoring
+
+```
+{
+  "searchQueries": ["iPad Pro 13 inch"],
+  "maxResults": 20,
+  "countryCode": "gb",
+  "languageCode": "en"
+}
+```
+
+### Example: Budget product research
+
+```
+{
+  "searchQueries": ["gaming keyboard"],
+  "maxResults": 40,
+  "sortBy": "price_low",
+  "minPrice": 30,
+  "maxPrice": 150
 }
 ```
 
 ---
 
-## 🧩 Dataset Views (Table View)
+## Output
 
-This actor includes clean, organized dataset table views:
+Each item in the dataset represents one product listing.
 
-| View | Description |
+| Field | Type | Description |
+| --- | --- | --- |
+| `title` | string | Full product name as shown on Google Shopping |
+| `price` | number|null | Numeric price in local currency |
+| `price_raw` | string|null | Raw price string with currency symbol (e.g. `"$39.99"`) |
+| `currency` | string|null | Currency symbol (e.g. `"$"`, `"£"`, `"€"`) |
+| `original_price` | number|null | Pre-discount price if a sale is shown |
+| `discount_percent` | number|null | Calculated discount % when original price is available |
+| `merchant` | string|null | Seller name (e.g. `"Best Buy"`, `"Amazon"`) |
+| `rating` | number|null | Star rating out of 5.0 |
+| `reviews_count` | integer|null | Number of user reviews |
+| `product_url` | null | Always null — Google Shopping uses JS navigation (no static href) |
+| `image_url` | null | Always null — images are lazy-loaded via JS (not in static HTML) |
+| `shipping` | string|null | Shipping info (e.g. `"Free delivery by Wed"`) |
+| `condition` | string|null | Product condition if shown (`new`, `used`, `refurbished`) |
+| `position` | integer | 1-based rank in search results |
+| `search_query` | string | The original search query that returned this product |
+| `country` | string | Country code used for the search |
+| `scraped_at` | string | ISO 8601 timestamp |
+| `source_url` | string | The Google Shopping URL that was scraped |
+
+### Example output item
+
+```
+{
+  "title": "Sony WH-CH720N Noise Canceling Wireless Headphones",
+  "price": 179.99,
+  "price_raw": "$179.99",
+  "currency": "$",
+  "original_price": null,
+  "discount_percent": null,
+  "merchant": "Walmart",
+  "rating": 4.6,
+  "reviews_count": 14000,
+  "product_url": null,
+  "image_url": null,
+  "shipping": "Free delivery by Tue",
+  "condition": null,
+  "position": 1,
+  "search_query": "wireless headphones",
+  "country": "us",
+  "scraped_at": "2026-04-13T10:30:00.000Z",
+  "source_url": "http://www.google.com/search?q=wireless+headphones&tbm=shop&gl=us&hl=en&num=40"
+}
+```
+
+---
+
+## Supported Countries
+
+`us` `gb` `ca` `au` `de` `fr` `es` `it` `br` `mx` `in` `jp` `nl` `pl` `se` `no` `dk` `fi` `be` `at` `ch` `pt` `ie` `nz` `za` `sg` `ae` `sa`
+
+---
+
+## Known Limitations
+
+- **`product_url` is always null** — Google Shopping renders product links via JavaScript. No static href is present in the HTML.
+- **`image_url` is always null** — Product images are lazy-loaded by JavaScript. The static HTML only contains placeholder GIFs.
+- **Price filters are approximate** — Google Shopping occasionally returns results slightly outside the min/max range.
+- **GOOGLE_SERP proxy is required** — Do not change the proxy configuration or the actor will fail.
+
+---
+
+## Pricing
+
+Pay-Per-Result at **$0.002 per product** extracted.
+
+| Products scraped | Estimated cost |
 | --- | --- |
-| 📊 **Products Overview** | Product title, price, rating, reviews, store, buy link |
-| 💰 **Pricing Details** | Current price, original price, discounts, price ranges |
-| 🏪 **Store Information** | Store name, rating, reviews, shipping, returns |
-| 📦 **Product Details** | Description, condition, ratings, product URLs |
+| 100 | ~$0.20 |
+| 1,000 | ~$2.00 |
+| 10,000 | ~$20.00 |
 
 ---
 
-## ❓ FAQ
+## Legal
 
-### **Q1: How many products can I scrape?**
-
-Each page can return up to 100 products. With `limit`, you can scrape thousands of products. Start small and increase as needed.
-
-### **Q2: Why do I get fewer results than expected?**
-
-Some searches may have limited products available. Try:
-
-- A broader search query
-- Different country/language settings
-- Different sorting options
-
-### **Q3: Are all fields always available?**
-
-Not always. Some products may not have descriptions, ratings, or sale information. The actor returns `null` for unavailable fields.
-
-### **Q4: Can I search in different countries?**
-
-Yes! Use the `country` parameter with ISO 3166-1 alpha-2 codes (e.g., `us`, `gb`, `de`, `fr`, `in`).
-
-### **Q5: How often is the data updated?**
-
-The actor fetches real-time data from Google Shopping. Prices and availability are current at the time of scraping.
-
-### **Q6: Can I use this for price monitoring?**
-
-Yes! Schedule the actor to run periodically and track price changes over time using Apify's scheduling feature.
-
----
-
-## 🔎 Tags
-
-Google Shopping scraper, Google Shopping API, scrape Google Shopping, Google Shopping data extractor, Google Shopping price scraper, product price scraper, e-commerce scraper, price monitoring tool, competitor price analysis, Google Shopping product search, product data extraction, shopping comparison scraper, retail price tracker, Google product scraper, Apify Google Shopping, price comparison tool, e-commerce data extraction, product research tool, market research scraper, online shopping scraper
+This actor scrapes publicly available data from Google Shopping. Users are responsible for ensuring their use complies with Google's Terms of Service and applicable laws.
