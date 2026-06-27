@@ -1,129 +1,103 @@
-[Google Shopping Scraper](https://apify.com/scrape.badger/google-shopping-scraper?fpr=data)
+[Google Shopping Scraper](https://apify.com/nexgendata/google-shopping-scraper?fpr=data)
 
 ## What does Google Shopping Scraper do?
 
-Scrape [Google Shopping](https://shopping.google.com) product tiles at scale — title, price, rating, review count, merchant, thumbnail, direct link — with full filter support (price range, free shipping, on sale, condition).
+Google Shopping Scraper extracts product listings, prices, sellers, and comparison data from Google Shopping. Monitor competitor pricing, track products, and analyze e-commerce data.
 
 ## Why use Google Shopping Scraper?
 
-- **Full Google Shopping filter set.** Price range, free shipping, on sale, used/new, sort order.
-- **Per-product enrichment path.** Pipe each `gpcid` through `google-products-scraper` for deep product detail.
-- **200+ country domains.** `gl` + `hl` for local pricing and merchants.
-- **Pagination.** Up to 10 pages per run, stops early when Google runs out.
-- **Each tile as its own record.** Stream-friendly output — one product per dataset row.
+Price monitoring is critical for e-commerce competitiveness. This scraper delivers real-time product pricing and seller data from Google Shopping, the world's largest product comparison platform.
 
-## What data can Google Shopping Scraper extract?
+## Use cases
 
-| Field | Type | Description |
+- **Price Monitoring**: Track competitor pricing across products and sellers
+- **E-Commerce Intelligence**: Monitor product availability and pricing trends
+- **MAP Compliance**: Verify minimum advertised price compliance across sellers
+- **Product Research**: Analyze product offerings, features, and pricing strategies
+- **Market Entry**: Research pricing and competition before launching products
+
+## Input parameters
+
+| Parameter | Type | Description |
 | --- | --- | --- |
-| title | string | Product title |
-| price | object | `{value, currency, extracted}` |
-| rating | number | Star rating (when available) |
-| reviews | number | Review count |
-| merchant | string | Store name |
-| thumbnail | string | Image URL |
-| link | string | Direct product URL |
-| gpcid | string | Google Shopping's product ID (for `google-products-scraper`) |
-| position | number | Rank within the page |
+| `query` | String | Product search query |
+| `maxResults` | Number | Maximum results (default: 20) |
+| `country` | String | Country code (default: "us") |
 
-## How to scrape Google Shopping
+## Pricing
 
-1. Click **Try for free**.
-2. Enter your search query in `q`.
-3. Optional: set `min_price` / `max_price`, `sort_by`, `free_shipping`, `on_sale`.
-4. Set `gl` for the country (default `us`).
-5. Set `max_pages` — each page is ≈ 40 tiles.
-6. Click **Start** — each product tile streams into the dataset.
+Pay-Per-Event pricing: $1.00 per 1,000 results. Platform fee: $0.005 per start.
 
-## How much will it cost?
+---
 
-**$3 per 1,000 pages (≈ $0.075 per 1,000 product tiles).** One API call per page. A 3-page run returns ≈ 120 tiles for $0.009.
+ 
 
-### Competitor benchmark
-
-| Actor | Author | Price | Notes |
-| --- | --- | --- | --- |
-| emastra/google-shopping-scraper | emastra | $30/mo subscription + CUs | Subscription floor |
-| apify/google-search-scraper | Apify | ~$4 / 1k tiles | SERP actor with Shopping block |
-| compass/crawler-google-shopping | Compass | ~$5 / 1k | Search-only |
-| **scrape-badger/google-shopping-scraper** | **ScrapeBadger** | **$3 / 1k pages** | **Pay-per-use, full filter set** |
-
-## Input
-
-Configure the run in the **Input** tab above, or pass a JSON object matching the fields below when calling the Actor via the Apify API.
-
-| Field | Required | Description |
-| --- | --- | --- |
-| q | ✅ | Product query. |
-| gl | — | Country (default `us`). |
-| hl | — | Language (default `en`). |
-| min_price / max_price | — | Price range in local currency. |
-| sort_by | — | Google's sort modes. |
-| free_shipping / on_sale | — | Boolean filters. |
-| max_pages | — | 1-10, default 3. |
-
-## Output
-
-Every successful run streams records into the run's dataset. Download as JSON, CSV, XML, Excel, or HTML from the **Dataset** tab; consume programmatically via the Apify API or webhooks.
-
-Example record:
+## 💻 Code Example — Python
 
 ```
-{
-  "title": "Nike Air Max 90",
-  "price": {
-    "value": "$119.99",
-    "currency": "USD",
-    "extracted": 119.99
-  },
-  "rating": 4.5,
-  "reviews": 2341,
-  "merchant": "Nike.com",
-  "thumbnail": "https://encrypted-tbn0.gstatic.com/shopping?q=\u2026",
-  "link": "https://www.nike.com/t/\u2026",
-  "gpcid": "1234567890123456789",
-  "position": 1
-}
+from apify_client import ApifyClient
+
+client = ApifyClient("YOUR_APIFY_TOKEN")
+run = client.actor("nexgendata/google-shopping-scraper").call(run_input={
+    # Fill in the input shape from the actor's input_schema
+})
+
+for item in client.dataset(run["defaultDatasetId"]).iterate_items():
+    print(item)
 ```
 
-## Tips / Advanced options
+## 🌐 Code Example — cURL
 
-- **Enrich with `google-products-scraper`.** Pipe each `gpcid` for specs, offers, variants — full immersive product detail.
-- **Use `on_sale: true` for deal tracking.** Pair with a daily scheduler for price-drop alerts.
-- **Sort by `review_score` for quality.** Avoid tiles with few reviews — Google's sort controls help.
-- **Country matters for pricing.** `gl: uk` returns GBP and UK merchants; `gl: de` returns EUR and DE merchants.
+```
+curl -X POST "https://api.apify.com/v2/acts/nexgendata~google-shopping-scraper/run-sync-get-dataset-items?token=YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{ /* input schema */ }'
+```
 
-## FAQ, Disclaimers, Support
+## ❓ FAQ
 
-### What's `gpcid`?
+**Q: How do I get started?**
+Sign up at [apify.com](https://www.apify.com/?fpr=2ayu9b), grab your API token from Settings → Integrations, and run the actor via the Apify console, API, Python SDK, or any integration (Zapier, Make.com, n8n).
 
-Google Shopping's product ID. It's the input for `google-products-scraper` to get full product details (specs, offers, variants).
+**Q: What's the typical cost per run?**
+See the pricing section below. Most runs finish under $0.10 for typical batches.
 
-### Does this include sponsored tiles?
+**Q: Is this actor maintained?**
+Yes. NexGenData maintains 165+ Apify actors and ships updates regularly. Bug reports via the Apify console issues tab get responses within 24 hours.
 
-Yes — the output includes organic and sponsored tiles together. Filter by `ad: true` downstream if you need to separate.
+**Q: Can I use the output commercially?**
+Yes — you own the output data. Check the target site's Terms of Service for any usage restrictions on the scraped content itself.
 
-### Why is the price an object?
+**Q: How do I handle rate limits?**
+Apify manages concurrency and retries automatically. For very large batches (10K+ items), run multiple smaller jobs in parallel instead of one mega-job for better reliability.
 
-`extracted` is the numeric value (cents-safe), `value` is the original formatted string, `currency` is the ISO code. The numeric field is what you want for filtering/analysis.
+## 💰 Pricing
 
-### Can I search by product image?
+Pay-per-event pricing — you only pay for what you actually extract.
 
-No — Google Shopping is text-search only. For visual search use `google-lens-scraper`.
+- **Actor Start:** $0.0050
+- **result:** $0.0150
 
-### Disclaimer
+## 🔗 Related NexGenData Actors
 
-This Actor scrapes public Google data only. You're responsible for compliance with Google's Terms of Service and any applicable data-protection laws (GDPR, CCPA, etc.) in your jurisdiction. ScrapeBadger does not store the scraped results — they are delivered directly to your Apify dataset.
+- [Shopify Spy](https://apify.com/nexgendata/shopify-spy?fpr=2ayu9b)
+- [Shopify Store Detector](https://apify.com/nexgendata/shopify-store-detector?fpr=2ayu9b)
+- [SaaS Pricing Tracker](https://apify.com/nexgendata/saas-pricing-tracker?fpr=2ayu9b)
 
-### Support
+## 🚀 Apify Affiliate Program
 
-Something not working? Open a ticket in the **Issues** tab above — we triage within one business day. Full API reference: [docs.scrapebadger.com](https://docs.scrapebadger.com).
+New to Apify? Sign up with our [referral link](https://www.apify.com/?fpr=2ayu9b) — you get free platform credits on signup, and you help fund the maintenance of this actor fleet.
 
-### Related Actors
+## 📚 More From NexGenData
 
-- [`google-products-scraper`](https://apify.com/scrape-badger/google-products-scraper) — Deep product detail per `gpcid`
-- [`google-search-scraper`](https://apify.com/scrape-badger/google-search-scraper) — SERP with inline Shopping block
+Explore the full catalog, tutorials, Gumroad data packs, and newsletter at **[thenextgennexus.com](https://thenextgennexus.com)** — the brand home for everything we ship.
 
-### Powered by
+- 📖 Tutorials & how-to guides
+- 🗂️ Full actor catalog with usage examples
+- 📦 Gumroad data packs (one-time purchases)
+- 📬 Newsletter — monthly drops of new actors and revenue experiments
 
-[ScrapeBadger](https://scrapebadger.com) — Google-optimised residential proxy pool + browser-farm fallback, 99.7% uptime, unmetered bandwidth. No CAPTCHAs reach you.
+---
+
+*Built and maintained by [NexGenData](https://apify.com/nexgendata?fpr=2ayu9b) — 165+ actors covering scraping, enrichment, MCP servers, and automation.*
+🏠 Home: [thenextgennexus.com](https://thenextgennexus.com)
