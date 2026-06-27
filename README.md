@@ -1,170 +1,129 @@
-[Google Shopping Scraper](https://apify.com/khadinakbar/google-shopping-scraper?fpr=data)
+[Google Shopping Scraper](https://apify.com/scrape.badger/google-shopping-scraper?fpr=data)
 
-# 🛍️ Google Shopping Scraper
+## What does Google Shopping Scraper do?
 
-Extract product listings, prices, sellers, ratings, discounts, and shipping info from Google Shopping in real time. Supports 28 countries, price range filters, sort by price or reviews, and new/used/refurbished condition filters.
+Scrape [Google Shopping](https://shopping.google.com) product tiles at scale — title, price, rating, review count, merchant, thumbnail, direct link — with full filter support (price range, free shipping, on sale, condition).
 
----
+## Why use Google Shopping Scraper?
 
-## When to use this actor
+- **Full Google Shopping filter set.** Price range, free shipping, on sale, used/new, sort order.
+- **Per-product enrichment path.** Pipe each `gpcid` through `google-products-scraper` for deep product detail.
+- **200+ country domains.** `gl` + `hl` for local pricing and merchants.
+- **Pagination.** Up to 10 pages per run, stops early when Google runs out.
+- **Each tile as its own record.** Stream-friendly output — one product per dataset row.
 
-Use this actor when asked to:
-
-- Find prices for a product on Google Shopping
-- Compare prices across multiple sellers or merchants
-- Monitor or track product pricing over time
-- Research competitor pricing for a product category
-- Find the cheapest place to buy a specific product
-- Get product ratings and review counts from Google Shopping
-- Scrape Google Shopping results for a keyword or product name
-- Get localized prices in a specific country (UK, Germany, Japan, etc.)
-- Filter results by condition (new, used, refurbished) or price range
-
----
-
-## Quick Start (Minimal Input)
-
-```
-{
-  "searchQueries": ["wireless headphones"],
-  "maxResults": 20
-}
-```
-
-`searchQueries` is the only required field. All other fields have sensible defaults.
-
----
-
-## Input
-
-| Field | Type | Default | Description |
-| --- | --- | --- | --- |
-| `searchQueries` | string[] | **required** | Product keywords to search. Multiple queries run independently. |
-| `maxResults` | integer | `20` | Max products per query (1–200). Triggers auto-pagination for higher values. |
-| `countryCode` | string | `"us"` | Target country for localized prices. E.g. `"gb"` for UK, `"de"` for Germany. |
-| `languageCode` | string | `"en"` | Language for results. E.g. `"fr"` for French. |
-| `sortBy` | string | `"relevance"` | Sort order: `relevance`, `price_low`, `price_high`, `review_score`. |
-| `condition` | string | `"any"` | Product condition: `any`, `new`, `used`, `refurbished`. |
-| `minPrice` | integer | — | Minimum price filter in the local currency (e.g. `50` = $50 in US). |
-| `maxPrice` | integer | — | Maximum price filter in the local currency (e.g. `500` = $500 in US). |
-| `proxyConfiguration` | object | GOOGLE_SERP | Leave as default — GOOGLE_SERP proxy is required for reliable Google access. |
-
-### Example: Price comparison with filters
-
-```
-{
-  "searchQueries": ["Sony WH-1000XM5", "Bose QuietComfort 45"],
-  "maxResults": 10,
-  "sortBy": "price_low",
-  "condition": "new",
-  "countryCode": "us"
-}
-```
-
-### Example: UK price monitoring
-
-```
-{
-  "searchQueries": ["iPad Pro 13 inch"],
-  "maxResults": 20,
-  "countryCode": "gb",
-  "languageCode": "en"
-}
-```
-
-### Example: Budget product research
-
-```
-{
-  "searchQueries": ["gaming keyboard"],
-  "maxResults": 40,
-  "sortBy": "price_low",
-  "minPrice": 30,
-  "maxPrice": 150
-}
-```
-
----
-
-## Output
-
-Each item in the dataset represents one product listing.
+## What data can Google Shopping Scraper extract?
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `title` | string | Full product name as shown on Google Shopping |
-| `price` | number|null | Numeric price in local currency |
-| `price_raw` | string|null | Raw price string with currency symbol (e.g. `"$39.99"`) |
-| `currency` | string|null | Currency symbol (e.g. `"$"`, `"£"`, `"€"`) |
-| `original_price` | number|null | Pre-discount price if a sale is shown |
-| `discount_percent` | number|null | Calculated discount % when original price is available |
-| `merchant` | string|null | Seller name (e.g. `"Best Buy"`, `"Amazon"`) |
-| `rating` | number|null | Star rating out of 5.0 |
-| `reviews_count` | integer|null | Number of user reviews |
-| `product_url` | null | Always null — Google Shopping uses JS navigation (no static href) |
-| `image_url` | null | Always null — images are lazy-loaded via JS (not in static HTML) |
-| `shipping` | string|null | Shipping info (e.g. `"Free delivery by Wed"`) |
-| `condition` | string|null | Product condition if shown (`new`, `used`, `refurbished`) |
-| `position` | integer | 1-based rank in search results |
-| `search_query` | string | The original search query that returned this product |
-| `country` | string | Country code used for the search |
-| `scraped_at` | string | ISO 8601 timestamp |
-| `source_url` | string | The Google Shopping URL that was scraped |
+| title | string | Product title |
+| price | object | `{value, currency, extracted}` |
+| rating | number | Star rating (when available) |
+| reviews | number | Review count |
+| merchant | string | Store name |
+| thumbnail | string | Image URL |
+| link | string | Direct product URL |
+| gpcid | string | Google Shopping's product ID (for `google-products-scraper`) |
+| position | number | Rank within the page |
 
-### Example output item
+## How to scrape Google Shopping
+
+1. Click **Try for free**.
+2. Enter your search query in `q`.
+3. Optional: set `min_price` / `max_price`, `sort_by`, `free_shipping`, `on_sale`.
+4. Set `gl` for the country (default `us`).
+5. Set `max_pages` — each page is ≈ 40 tiles.
+6. Click **Start** — each product tile streams into the dataset.
+
+## How much will it cost?
+
+**$3 per 1,000 pages (≈ $0.075 per 1,000 product tiles).** One API call per page. A 3-page run returns ≈ 120 tiles for $0.009.
+
+### Competitor benchmark
+
+| Actor | Author | Price | Notes |
+| --- | --- | --- | --- |
+| emastra/google-shopping-scraper | emastra | $30/mo subscription + CUs | Subscription floor |
+| apify/google-search-scraper | Apify | ~$4 / 1k tiles | SERP actor with Shopping block |
+| compass/crawler-google-shopping | Compass | ~$5 / 1k | Search-only |
+| **scrape-badger/google-shopping-scraper** | **ScrapeBadger** | **$3 / 1k pages** | **Pay-per-use, full filter set** |
+
+## Input
+
+Configure the run in the **Input** tab above, or pass a JSON object matching the fields below when calling the Actor via the Apify API.
+
+| Field | Required | Description |
+| --- | --- | --- |
+| q | ✅ | Product query. |
+| gl | — | Country (default `us`). |
+| hl | — | Language (default `en`). |
+| min_price / max_price | — | Price range in local currency. |
+| sort_by | — | Google's sort modes. |
+| free_shipping / on_sale | — | Boolean filters. |
+| max_pages | — | 1-10, default 3. |
+
+## Output
+
+Every successful run streams records into the run's dataset. Download as JSON, CSV, XML, Excel, or HTML from the **Dataset** tab; consume programmatically via the Apify API or webhooks.
+
+Example record:
 
 ```
 {
-  "title": "Sony WH-CH720N Noise Canceling Wireless Headphones",
-  "price": 179.99,
-  "price_raw": "$179.99",
-  "currency": "$",
-  "original_price": null,
-  "discount_percent": null,
-  "merchant": "Walmart",
-  "rating": 4.6,
-  "reviews_count": 14000,
-  "product_url": null,
-  "image_url": null,
-  "shipping": "Free delivery by Tue",
-  "condition": null,
-  "position": 1,
-  "search_query": "wireless headphones",
-  "country": "us",
-  "scraped_at": "2026-04-13T10:30:00.000Z",
-  "source_url": "http://www.google.com/search?q=wireless+headphones&tbm=shop&gl=us&hl=en&num=40"
+  "title": "Nike Air Max 90",
+  "price": {
+    "value": "$119.99",
+    "currency": "USD",
+    "extracted": 119.99
+  },
+  "rating": 4.5,
+  "reviews": 2341,
+  "merchant": "Nike.com",
+  "thumbnail": "https://encrypted-tbn0.gstatic.com/shopping?q=\u2026",
+  "link": "https://www.nike.com/t/\u2026",
+  "gpcid": "1234567890123456789",
+  "position": 1
 }
 ```
 
----
+## Tips / Advanced options
 
-## Supported Countries
+- **Enrich with `google-products-scraper`.** Pipe each `gpcid` for specs, offers, variants — full immersive product detail.
+- **Use `on_sale: true` for deal tracking.** Pair with a daily scheduler for price-drop alerts.
+- **Sort by `review_score` for quality.** Avoid tiles with few reviews — Google's sort controls help.
+- **Country matters for pricing.** `gl: uk` returns GBP and UK merchants; `gl: de` returns EUR and DE merchants.
 
-`us` `gb` `ca` `au` `de` `fr` `es` `it` `br` `mx` `in` `jp` `nl` `pl` `se` `no` `dk` `fi` `be` `at` `ch` `pt` `ie` `nz` `za` `sg` `ae` `sa`
+## FAQ, Disclaimers, Support
 
----
+### What's `gpcid`?
 
-## Known Limitations
+Google Shopping's product ID. It's the input for `google-products-scraper` to get full product details (specs, offers, variants).
 
-- **`product_url` is always null** — Google Shopping renders product links via JavaScript. No static href is present in the HTML.
-- **`image_url` is always null** — Product images are lazy-loaded by JavaScript. The static HTML only contains placeholder GIFs.
-- **Price filters are approximate** — Google Shopping occasionally returns results slightly outside the min/max range.
-- **GOOGLE_SERP proxy is required** — Do not change the proxy configuration or the actor will fail.
+### Does this include sponsored tiles?
 
----
+Yes — the output includes organic and sponsored tiles together. Filter by `ad: true` downstream if you need to separate.
 
-## Pricing
+### Why is the price an object?
 
-Pay-Per-Result at **$0.002 per product** extracted.
+`extracted` is the numeric value (cents-safe), `value` is the original formatted string, `currency` is the ISO code. The numeric field is what you want for filtering/analysis.
 
-| Products scraped | Estimated cost |
-| --- | --- |
-| 100 | ~$0.20 |
-| 1,000 | ~$2.00 |
-| 10,000 | ~$20.00 |
+### Can I search by product image?
 
----
+No — Google Shopping is text-search only. For visual search use `google-lens-scraper`.
 
-## Legal
+### Disclaimer
 
-This actor scrapes publicly available data from Google Shopping. Users are responsible for ensuring their use complies with Google's Terms of Service and applicable laws.
+This Actor scrapes public Google data only. You're responsible for compliance with Google's Terms of Service and any applicable data-protection laws (GDPR, CCPA, etc.) in your jurisdiction. ScrapeBadger does not store the scraped results — they are delivered directly to your Apify dataset.
+
+### Support
+
+Something not working? Open a ticket in the **Issues** tab above — we triage within one business day. Full API reference: [docs.scrapebadger.com](https://docs.scrapebadger.com).
+
+### Related Actors
+
+- [`google-products-scraper`](https://apify.com/scrape-badger/google-products-scraper) — Deep product detail per `gpcid`
+- [`google-search-scraper`](https://apify.com/scrape-badger/google-search-scraper) — SERP with inline Shopping block
+
+### Powered by
+
+[ScrapeBadger](https://scrapebadger.com) — Google-optimised residential proxy pool + browser-farm fallback, 99.7% uptime, unmetered bandwidth. No CAPTCHAs reach you.
